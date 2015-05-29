@@ -22,28 +22,24 @@ class DrawBoxes
 {
 public:
     DrawBoxes(QVector<Geom::MinOBB*>);
-    std::vector fill_polygonsoup_vec(QColor color=Qt::cyan);
+    std::vector<PolygonSoup> fill_polygonsoup_vec(QColor color=Qt::cyan);
 private:
-    QVector<Geom::MinOBB*> mobb_vec;
+    QVector<Geom::MinOBB> mobb_vec;
     std::vector<PolygonSoup> ps_vec;
 };
 
-/*
-class DrawBoxes : public RenderObject::Base
+class BoxSoup : public RenderObject::Base
 {
 public:
-    DrawBoxes():RenderObject::Base(1, Qt::red){}
-    DrawBoxes(QVector<Geom::Box> _box_vec) : RenderObject::Base(1, Qt::red)
+    BoxSoup():RenderObject::Base(1, Qt::red){}
+    BoxSoup(QVector<Geom::Box> _box_vec) : RenderObject::Base(1, Qt::red)
     {
         box_vec = _box_vec;
     }
     virtual void draw(QGLWidget& widget)
     {
+        this->draw();
         Q_UNUSED(widget)
-
-        //QuickMeshDraw::drawMeshSharpEdges(mesh, QColor(1,0,0), 6);
-        //QuickMeshDraw::drawMeshSolid(mesh, QColor(1,0,0));
-        //QuickMeshDraw::drawMeshWireFrame(mesh, QColor(1,0,0));
     }
 
     void add_box(const Geom::Box box, const QColor& c = Qt::blue)
@@ -51,11 +47,11 @@ public:
         box_vec.push_back(box);
     }
     void draw_sharp_edges();
+    void draw();
 
 private:
     QVector<Geom::Box> box_vec;
 
 };
-*/
 #endif
 

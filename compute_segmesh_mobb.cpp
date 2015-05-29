@@ -13,13 +13,11 @@
  */
 
 #include "CustomDrawObjects.h"
-#include "QuickMeshDraw.h"
 #include "compute_segmesh_mobb.h"
-//#include "draw_box.h"
+#include "draw_boxes.h"
 
 void Filter_mobb::initParameters(RichParameterSet *pars)
 {
-    pars->addParam(new RichInt("segmesh_index", 0, "Part Index"));
     pars->addParam(new RichBool("display_mobb", true, "visualize mini obb"));
     pars->addParam(new RichBool("display_mesh", true, "visualize object mesh"));
     is_computed = false;
@@ -31,6 +29,8 @@ void Filter_mobb::compute_mobb()
     segmesh_manager = SegMeshLoader(mesh());
     mesh_segment_vec = segmesh_manager.getSegMeshes();
 
+    segment_mobb_vec.clear();
+    ps_vec.clear();
     // compute mini volume obb
     QVector<Vector3> vertex_soup;
     for (auto part : mesh_segment_vec)
@@ -44,35 +44,43 @@ void Filter_mobb::compute_mobb()
         Geom::MinOBB temp_mobb(vertex_soup, false);
         segment_mobb_vec.push_back(temp_mobb);
     }
-
+    for (auto mobb : segment_mobb_vec)
+    {
+        mobb.mMinBox.get_PolygonSoup(Qt::cyan);
+        PolygonSoup ps;
+        ps = mobb.mMinBox.get_PolygonSoup(Qt::cyan);
+        ps_vec.push_back(ps);
+    }
+    
 }
+
+void Filter_mobb::draw_mobb()
+{
+    drawArea()->clear();
+    for(auto ps : ps_vec)
+    {
+        drawArea()->addRenderObject(&ps);
+    }
+    drawArea()->drawAllRenderObjects();
+}
+
 
 void Filter_mobb::applyFilter(RichParameterSet *pars)
 {
-    int segmesh_index = pars->getInt("segmesh_index");
     if (!is_computed)
     {
         compute_mobb();
         is_computed = true;
     }
-    if (segmesh_index >= mesh_segment_vec.size() )
-        segmesh_index %= mesh_segment_vec.size();
-
     drawArea()->clear();
-    DrawBox *db = new DrawBox;
     if(pars && pars->getBool("display_mobb"))
     {
-        for(auto mesh_seg : mesh_segment_vec)
-        {
-            db->mesh = mesh_seg;
-            drawArea()->addRenderObject(db);
-        }
-        drawArea()->drawAllRenderObjects();
+        draw_mobb();
     }
     if(pars && pars->getBool("display_mesh"))
     {
         //qDebug()<<"mesh visible "<<mesh()->isVisible;
-     //   mesh()->isVisible = !mesh()->isVisible;
+        mesh()->isVisible = !mesh()->isVisible;
     }
 }
 

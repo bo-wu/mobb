@@ -18,11 +18,11 @@ DrawBoxes::DrawBoxes(QVector<Geom::MinOBB*> _mobb_vec) : mobb_vec(_mobb_vec)
 
 }
 
-std::vector DrawBoxes::fill_polygonsoup_vec(QColor color)
+std::vector<PolygonSoup> DrawBoxes::fill_polygonsoup_vec(QColor color)
 {
     for(auto mobb : mobb_vec)
     {
-        ps_vec.push_back(mobb->mMinBox.get_PolygonSoup(color));
+        ps_vec.push_back(mobb.mMinBox.get_PolygonSoup(color));
     }
     return ps_vec;
 }
