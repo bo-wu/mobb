@@ -46,10 +46,6 @@ void Filter_mobb::compute_mobb()
     }
     for (auto mobb : segment_mobb_vec)
     {
-        mobb.mMinBox.get_PolygonSoup(Qt::cyan);
-        PolygonSoup ps;
-        ps = mobb.mMinBox.get_PolygonSoup(Qt::cyan);
-        ps_vec.push_back(ps);
     }
     
 }

@@ -26,3 +26,54 @@ std::vector<PolygonSoup> DrawBoxes::fill_polygonsoup_vec(QColor color)
     }
     return ps_vec;
 }
+
+// copy from PolygonSoup
+BoxSoup::draw()
+{
+    glEnable(GL_LIGHTING);
+    glEnable(GL_BLEND);
+
+    //drawTris();
+    draw_quads();
+
+    glDisable(GL_LIGHTING);
+
+    // Draw borders as lines and points to force drawing something
+    glLineWidth(2.0f);
+    glColor4d(0,0,0,1);
+    glBegin(GL_LINES);
+    for (QVector<QVector3> poly : polys){
+        for(int i = 0; i < (int) poly.size(); i++){
+            glVertQt(poly[i]);
+            glVertQt(poly[(i+1) % poly.size()]);
+        }
+    }
+    glEnd();
+
+    glPointSize(3.0f);
+    glBegin(GL_POINTS);
+    for (QVector<QVector3> poly : polys){
+        for(int i = 0; i < (int) poly.size(); i++)
+            glVertQt(poly[i]);
+    }
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
+
+void BoxSoup::draw_quads(bool isColored = true){
+    glDisable(GL_LIGHTING);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBegin(GL_QUADS);
+    for(int i = 0; i < (int) polys.size(); i++)
+    {
+        if(polys[i].size() != 4) continue;
+        else{
+            if(isColored) glColorQt(polys_colors[i]);
+            for(int p = 0; p < 4; p++) glVertQt(polys[i][p]);
+        }
+    }
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
+

@@ -36,6 +36,7 @@ public:
     {
         box_vec = _box_vec;
     }
+    void clear()
     virtual void draw(QGLWidget& widget)
     {
         this->draw();
@@ -46,11 +47,14 @@ public:
     {
         box_vec.push_back(box);
     }
-    void draw_sharp_edges();
+    void draw_quads();
     void draw();
 
 private:
     QVector<Geom::Box> box_vec;
+    QVector< QVector<QVector3> > polys;
+    QVector<QVector3> polys_normals;
+    QVector<QColor> polys_colors;
 
 };
 #endif
