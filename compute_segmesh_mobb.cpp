@@ -14,7 +14,7 @@
 
 #include "CustomDrawObjects.h"
 #include "compute_segmesh_mobb.h"
-#include "draw_boxes.h"
+//#include "draw_boxes.h"
 #define GUI_DRAWING 1
 
 void Filter_mobb::initParameters(RichParameterSet *pars)
@@ -43,7 +43,8 @@ void Filter_mobb::compute_mobb()
         {
             vertex_soup.push_back(points[v]);
         }
-        Geom::MinOBB temp_mobb(vertex_soup, false);
+        //Geom::MinOBB temp_mobb(vertex_soup, false);
+        Geom::MinOBB temp_mobb(vertex_soup, true);
         segment_mobb_vec.push_back(temp_mobb);
     }
     
@@ -58,15 +59,34 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         is_computed = true;
     }
 
+    QColor color = Qt::cyan;
+    color.setAlphaF(0.3);
 #ifdef GUI_DRAWING
+    drawArea()->clear();
     if(pars && pars->getBool("display_mobb"))
     {
+        /*  
+        int seg_idx = pars->getInt("segment_index");
+        if (seg_idx >= segment_mobb_vec.size())
+        {
+            seg_idx = segment_mobb_vec.size() - 1;
+        }
+        qDebug()<<"segment index "<<seg_idx;
+
+        PolygonSoup *ps = new PolygonSoup;
+        for(QVector<Vector3> f : segment_mobb_vec[seg_idx].mMinBox.getFacePoints())
+        {
+            ps->addPoly(f, color);
+        }
+        drawArea()->addRenderObject(ps);
+        */
+
         for (auto mobb : segment_mobb_vec)
         {
             PolygonSoup *ps = new PolygonSoup; 
             for(QVector<Vector3> f : mobb.mMinBox.getFacePoints())
             {
-                ps->addPoly(f, Qt::cyan);
+                ps->addPoly(f, color);
             }
             drawArea()->addRenderObject(ps);
         }

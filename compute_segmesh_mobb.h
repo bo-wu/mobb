@@ -14,7 +14,7 @@
 #ifndef COMPUTE_SEGMESH_MOBB_H_
 #define COMPUTE_SEGMESH_MOBB_H_
 #include <vector>
-#include <memory>
+#include "Eigen/Dense"
 #include "MinOBB.h"
 #include "SegMeshLoader.h"
 #include "SurfaceMeshPlugins.h"
