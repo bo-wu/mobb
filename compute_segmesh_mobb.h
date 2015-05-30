@@ -14,6 +14,7 @@
 #ifndef COMPUTE_SEGMESH_MOBB_H_
 #define COMPUTE_SEGMESH_MOBB_H_
 #include <vector>
+#include <memory>
 #include "MinOBB.h"
 #include "SegMeshLoader.h"
 #include "SurfaceMeshPlugins.h"
@@ -33,17 +34,15 @@ public:
         mesh_segment_vec.clear();
         segment_mobb_vec.clear();
         //qDeleteAll(ps_vec);
-        ps_vec.clear();
     }
     void initParameters(RichParameterSet *pars);
     void applyFilter(RichParameterSet *pars);
-    void draw_mobb();
     void compute_mobb();
 private:
     bool is_computed;
+    bool testing;
     SegMeshLoader segmesh_manager;
     QVector<SurfaceMeshModel*> mesh_segment_vec;
-    std::vector<PolygonSoup> ps_vec;
     QVector<Geom::MinOBB> segment_mobb_vec;
 };
 

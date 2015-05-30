@@ -36,7 +36,7 @@ public:
     {
         box_vec = _box_vec;
     }
-    void clear()
+    void clear();
     virtual void draw(QGLWidget& widget)
     {
         this->draw();

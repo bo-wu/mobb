@@ -15,12 +15,15 @@
 #include "CustomDrawObjects.h"
 #include "compute_segmesh_mobb.h"
 #include "draw_boxes.h"
+#define GUI_DRAWING 1
 
 void Filter_mobb::initParameters(RichParameterSet *pars)
 {
     pars->addParam(new RichBool("display_mobb", true, "visualize mini obb"));
-    pars->addParam(new RichBool("display_mesh", true, "visualize object mesh"));
+    pars->addParam(new RichBool("display_mesh", false, "visualize object mesh"));
+    pars->addParam(new RichInt("segment_index", 0, "visualize segment individually"));
     is_computed = false;
+    testing = false;
 }
 
 void Filter_mobb::compute_mobb()
@@ -30,7 +33,6 @@ void Filter_mobb::compute_mobb()
     mesh_segment_vec = segmesh_manager.getSegMeshes();
 
     segment_mobb_vec.clear();
-    ps_vec.clear();
     // compute mini volume obb
     QVector<Vector3> vertex_soup;
     for (auto part : mesh_segment_vec)
@@ -44,20 +46,7 @@ void Filter_mobb::compute_mobb()
         Geom::MinOBB temp_mobb(vertex_soup, false);
         segment_mobb_vec.push_back(temp_mobb);
     }
-    for (auto mobb : segment_mobb_vec)
-    {
-    }
     
-}
-
-void Filter_mobb::draw_mobb()
-{
-    drawArea()->clear();
-    for(auto ps : ps_vec)
-    {
-        drawArea()->addRenderObject(&ps);
-    }
-    drawArea()->drawAllRenderObjects();
 }
 
 
@@ -68,16 +57,36 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         compute_mobb();
         is_computed = true;
     }
-    drawArea()->clear();
+
+#ifdef GUI_DRAWING
     if(pars && pars->getBool("display_mobb"))
     {
-        draw_mobb();
+        for (auto mobb : segment_mobb_vec)
+        {
+            PolygonSoup *ps = new PolygonSoup; 
+            for(QVector<Vector3> f : mobb.mMinBox.getFacePoints())
+            {
+                ps->addPoly(f, Qt::cyan);
+            }
+            drawArea()->addRenderObject(ps);
+        }
+        drawArea()->drawAllRenderObjects();
     }
+    else
+    {
+        drawArea()->clear();
+    }
+
     if(pars && pars->getBool("display_mesh"))
     {
-        //qDebug()<<"mesh visible "<<mesh()->isVisible;
-        mesh()->isVisible = !mesh()->isVisible;
+        mesh()->isVisible = true;
     }
+    else
+    {
+        mesh()->isVisible = false;
+    }
+#endif
+
 }
 
 Q_EXPORT_PLUGIN(Filter_mobb)
