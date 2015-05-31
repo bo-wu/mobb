@@ -3,7 +3,7 @@
  *
  *       Filename:  compute_segmesh_mobb.cpp      Created:  05/27/2015 04:19:09 PM
  *
- *    Description:  
+ *    Description:  compute segment mini obb
  *
  *         Author:  Wu Bo (Robert), wubo.gfkd@gmail.com
  *		Copyright:	Copyright (c) 2015, Wu Bo
@@ -14,13 +14,14 @@
 
 #include "CustomDrawObjects.h"
 #include "compute_segmesh_mobb.h"
+#include "XmlWriter.h"
 //#include "draw_boxes.h"
 #define GUI_DRAWING 1
 
 void Filter_mobb::initParameters(RichParameterSet *pars)
 {
     pars->addParam(new RichBool("display_mobb", true, "visualize mini obb"));
-    pars->addParam(new RichBool("display_mesh", false, "visualize object mesh"));
+    pars->addParam(new RichBool("display_mesh", true, "visualize object mesh"));
     pars->addParam(new RichInt("segment_index", 0, "visualize segment individually"));
     is_computed = false;
     testing = false;
@@ -35,6 +36,7 @@ void Filter_mobb::compute_mobb()
     segment_mobb_vec.clear();
     // compute mini volume obb
     QVector<Vector3> vertex_soup;
+    QVector<Vector3> all_vertex;
     for (auto part : mesh_segment_vec)
     {
         vertex_soup.clear();
@@ -42,12 +44,39 @@ void Filter_mobb::compute_mobb()
         foreach(Vertex v, part->vertices())
         {
             vertex_soup.push_back(points[v]);
+            all_vertex.push_back(points[v]);
         }
         //Geom::MinOBB temp_mobb(vertex_soup, false);
         Geom::MinOBB temp_mobb(vertex_soup, true);
         segment_mobb_vec.push_back(temp_mobb);
     }
-    
+    global_mobb = Geom::MinOBB(all_vertex, true);
+
+    write_mobb_xml();
+}
+
+// write mobb into xml file
+void Filter_mobb::write_mobb_xml()
+{
+    auto *model = document()->selectedModel();
+    auto name = (model->path).section(".", 0, 0);
+    //qDebug()<<qPrintable(name.append(".xml"));
+    name.append(".xml");
+    QFile file(name);
+    if(!file.open(QIODevice::WriteOnly)) 
+    {
+        qDebug()<<"cannot open file for writing xml";
+        return;
+    }
+    XmlWriter xw(&file);
+    xw.setAutoNewLine(true);
+    xw.writeRaw("<!--?xml Version = \"1.0\"?-->\n");
+    global_mobb.mMinBox.write(xw);
+    foreach(auto mobb, segment_mobb_vec)
+    {
+        mobb.mMinBox.write(xw);
+    }
+    file.close();
 }
 
 

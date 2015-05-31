@@ -27,6 +27,7 @@ class Filter_mobb : public SurfaceMeshFilterPlugin
 public:
     QString name() { return "Compute MOBB";}
     QString description() { return "Compute MOBB for segmented mesh"; }
+    QKeySequence shortcut(){ return QKeySequence(Qt::CTRL + Qt::Key_B); }
 
     ~Filter_mobb()
     {
@@ -38,9 +39,11 @@ public:
     void initParameters(RichParameterSet *pars);
     void applyFilter(RichParameterSet *pars);
     void compute_mobb();
+    void write_mobb_xml();
 private:
     bool is_computed;
     bool testing;
+    Geom::MinOBB global_mobb;
     SegMeshLoader segmesh_manager;
     QVector<SurfaceMeshModel*> mesh_segment_vec;
     QVector<Geom::MinOBB> segment_mobb_vec;
