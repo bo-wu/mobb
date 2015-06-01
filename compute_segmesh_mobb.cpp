@@ -162,7 +162,16 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         }
         drawArea()->addRenderObject(ps);
         */
-
+        //draw each box from xml
+        int seg_idx = pars->getInt("segment_index");
+        if(seg_idx >= box_vec.size()-1)
+            seg_idx = box_vec.size()-2;
+        PolygonSoup *ps = new PolygonSoup;
+        for(QVector<Vector3> f : box_vec[seg_idx+1].getFacePoints())
+        {
+            ps->addPoly(f, color);
+        }
+        drawArea()->addRenderObject(ps);
         /* //draw all boxes
         for (auto mobb : segment_mobb_vec)
         {
@@ -174,7 +183,7 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             drawArea()->addRenderObject(ps);
         }
         */
-        /*  */
+        /*  
         int i = 0;
         for (auto mobb : box_vec)
         {
@@ -191,6 +200,7 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             drawArea()->addRenderObject(ps);
         }
         drawArea()->drawAllRenderObjects();
+        */
     }
     else
     {
