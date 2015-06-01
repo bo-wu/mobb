@@ -40,6 +40,8 @@ public:
     void applyFilter(RichParameterSet *pars);
     void compute_mobb();
     void write_mobb_xml();
+    void read_mobb_xml();
+    std::vector<Geom::Box> parse_xml(QString fname);
 private:
     bool is_computed;
     bool testing;
@@ -47,6 +49,7 @@ private:
     SegMeshLoader segmesh_manager;
     QVector<SurfaceMeshModel*> mesh_segment_vec;
     QVector<Geom::MinOBB> segment_mobb_vec;
+    std::vector<Geom::Box> box_vec;
 };
 
 #endif

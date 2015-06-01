@@ -12,6 +12,9 @@
  * =====================================================================================
  */
 
+#include <pugixml.hpp>
+#include <iostream>
+#include <sstream>
 #include "CustomDrawObjects.h"
 #include "compute_segmesh_mobb.h"
 #include "XmlWriter.h"
@@ -26,6 +29,7 @@ void Filter_mobb::initParameters(RichParameterSet *pars)
     is_computed = false;
     testing = false;
 }
+
 
 void Filter_mobb::compute_mobb()
 {
@@ -80,11 +84,60 @@ void Filter_mobb::write_mobb_xml()
 }
 
 
+std::vector<Geom::Box> Filter_mobb::parse_xml(QString fname)
+{
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(qPrintable(fname));
+    std::cout<<"Load "<<qPrintable(fname)<<" results: "<<result.description()<<std::endl;
+    std::vector<Geom::Box> model_boxes;
+    //read boxes for model: should be fix format xml
+    std::vector<double> param_value;
+    for(pugi::xml_node box : doc.children("box"))
+    {
+        Eigen::Vector3d c;
+        QVector<Eigen::Vector3d> axis;
+        Eigen::Vector3d ext;
+        param_value.clear();
+        for(pugi::xml_node param : box.children())
+        {
+            std::string value_string(param.text().get());
+            std::istringstream ss(value_string);
+            double temp;
+            while(ss>>temp)
+            {
+                param_value.push_back(temp);
+            }
+        }
+        c << param_value.at(0), param_value.at(1), param_value.at(2);
+        ext << param_value.at(12), param_value.at(13), param_value.at(14);
+        Eigen::Vector3d temp;
+        for(int i=1; i<=3; ++i)
+        {
+            temp << param_value.at(i*3+0), param_value.at(i*3+1), param_value.at(i*3+2);
+            axis.push_back(temp);
+        }
+        model_boxes.push_back(Geom::Box(c, axis, ext));
+    }
+    return model_boxes;
+}
+
+
+void Filter_mobb::read_mobb_xml()
+{
+
+}
+
+
 void Filter_mobb::applyFilter(RichParameterSet *pars)
 {
+    
     if (!is_computed)
     {
-        compute_mobb();
+        //compute_mobb();
+        auto *model = document()->selectedModel();
+        auto xml_name = (model->path).section(".", 0, 0);
+        xml_name.append(".xml");
+        box_vec = parse_xml(xml_name);
         is_computed = true;
     }
 
@@ -94,7 +147,7 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
     drawArea()->clear();
     if(pars && pars->getBool("display_mobb"))
     {
-        /*  
+        /*  //draw each index 
         int seg_idx = pars->getInt("segment_index");
         if (seg_idx >= segment_mobb_vec.size())
         {
@@ -110,10 +163,28 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         drawArea()->addRenderObject(ps);
         */
 
+        /* //draw all boxes
         for (auto mobb : segment_mobb_vec)
         {
             PolygonSoup *ps = new PolygonSoup; 
             for(QVector<Vector3> f : mobb.mMinBox.getFacePoints())
+            {
+                ps->addPoly(f, color);
+            }
+            drawArea()->addRenderObject(ps);
+        }
+        */
+        /*  */
+        int i = 0;
+        for (auto mobb : box_vec)
+        {
+            if (i == 0)
+            {
+                ++i;
+                continue;
+            }
+            PolygonSoup *ps = new PolygonSoup; 
+            for(QVector<Vector3> f : mobb.getFacePoints())
             {
                 ps->addPoly(f, color);
             }
