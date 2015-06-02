@@ -24,7 +24,7 @@
 void Filter_mobb::initParameters(RichParameterSet *pars)
 {
     pars->addParam(new RichBool("display_mobb", true, "visualize mini obb"));
-    pars->addParam(new RichBool("display_mesh", true, "visualize object mesh"));
+    pars->addParam(new RichBool("display_mesh", false, "visualize object mesh"));
     pars->addParam(new RichInt("segment_index", 0, "visualize segment individually"));
     is_computed = false;
     testing = false;
@@ -92,8 +92,27 @@ std::vector<Geom::Box> Filter_mobb::parse_xml(QString fname)
     std::vector<Geom::Box> model_boxes;
     //read boxes for model: should be fix format xml
     std::vector<double> param_value;
+    int i = -1;
+    possibility.clear();
     for(pugi::xml_node box : doc.children("box"))
     {
+        if (i < 0)
+            i++;
+        else
+        {
+            if (box.attribute("appearence"))
+            {
+                int app = box.attribute("appearence").as_int();
+                int tot = box.attribute("total").as_int();
+                qDebug()<<app<<"/"<<tot;
+                if(tot > 0)
+                {
+                    possibility.push_back(double(app)/double(tot));
+                }
+                else
+                    possibility.push_back(0.0);
+            }
+        }
         Eigen::Vector3d c;
         QVector<Eigen::Vector3d> axis;
         Eigen::Vector3d ext;
@@ -140,8 +159,12 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         box_vec = parse_xml(xml_name);
         is_computed = true;
     }
-
-    QColor color = Qt::cyan;
+    
+    if (possibility.size() != box_vec.size()-1)
+    {
+        std::cout<<"maybe error in file format\n";
+    }
+    QColor color; // = Qt::cyan;
     color.setAlphaF(0.3);
 #ifdef GUI_DRAWING
     drawArea()->clear();
@@ -162,16 +185,6 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         }
         drawArea()->addRenderObject(ps);
         */
-        //draw each box from xml
-        int seg_idx = pars->getInt("segment_index");
-        if(seg_idx >= box_vec.size()-1)
-            seg_idx = box_vec.size()-2;
-        PolygonSoup *ps = new PolygonSoup;
-        for(QVector<Vector3> f : box_vec[seg_idx+1].getFacePoints())
-        {
-            ps->addPoly(f, color);
-        }
-        drawArea()->addRenderObject(ps);
         /* //draw all boxes
         for (auto mobb : segment_mobb_vec)
         {
@@ -183,24 +196,42 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             drawArea()->addRenderObject(ps);
         }
         */
-        /*  
-        int i = 0;
+
+        /*
+        //draw each box from xml
+        int seg_idx = pars->getInt("segment_index");
+        if(seg_idx >= box_vec.size()-1)
+            seg_idx = box_vec.size()-2;
+        color = qtJetColorMap(possibility.at(seg_idx));
+        color.setAlphaF(0.3);
+        PolygonSoup *ps = new PolygonSoup;
+        for(QVector<Vector3> f : box_vec[seg_idx+1].getFacePoints())
+        {
+            ps->addPoly(f, color);
+        }
+        drawArea()->addRenderObject(ps);
+        */
+
+          //draw all the box from xml
+        int i = -1;
         for (auto mobb : box_vec)
         {
-            if (i == 0)
+            if (i < 0)
             {
                 ++i;
                 continue;
             }
+            color = qtJetColorMap(possibility.at(i));
+            color.setAlphaF(0.8);
             PolygonSoup *ps = new PolygonSoup; 
             for(QVector<Vector3> f : mobb.getFacePoints())
             {
                 ps->addPoly(f, color);
             }
             drawArea()->addRenderObject(ps);
+            ++i;
         }
         drawArea()->drawAllRenderObjects();
-        */
     }
     else
     {
@@ -218,5 +249,28 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
 #endif
 
 }
+
+QColor Filter_mobb::qtJetColorMap(double value, double min, double max)
+{
+    unsigned char rgb[3];
+    unsigned char c1=144;
+    float max4=(max-min)/4;
+    value-=min;
+    if(value==HUGE_VAL)
+    {rgb[0]=rgb[1]=rgb[2]=255;}
+    else if(value<0)
+    {rgb[0]=rgb[1]=rgb[2]=0;}
+    else if(value<max4)
+    {rgb[0]=0;rgb[1]=0;rgb[2]=c1+(unsigned char)((255-c1)*value/max4);}
+    else if(value<2*max4)
+    {rgb[0]=0;rgb[1]=(unsigned char)(255*(value-max4)/max4);rgb[2]=255;}
+    else if(value<3*max4)
+    {rgb[0]=(unsigned char)(255*(value-2*max4)/max4);rgb[1]=255;rgb[2]=255-rgb[0];}
+    else if(value<max)
+    {rgb[0]=255;rgb[1]=(unsigned char)(255-255*(value-3*max4)/max4);rgb[2]=0;}
+    else {rgb[0]=255;rgb[1]=rgb[2]=0;}
+    return QColor(rgb[0],rgb[1],rgb[2]);
+}
+
 
 Q_EXPORT_PLUGIN(Filter_mobb)

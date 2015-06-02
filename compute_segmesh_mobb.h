@@ -41,6 +41,7 @@ public:
     void compute_mobb();
     void write_mobb_xml();
     void read_mobb_xml();
+    QColor qtJetColorMap(double value, double min=0.0, double max=1.0);
     std::vector<Geom::Box> parse_xml(QString fname);
 private:
     bool is_computed;
@@ -50,6 +51,7 @@ private:
     QVector<SurfaceMeshModel*> mesh_segment_vec;
     QVector<Geom::MinOBB> segment_mobb_vec;
     std::vector<Geom::Box> box_vec;
+    std::vector<double> possibility;
 };
 
 #endif
