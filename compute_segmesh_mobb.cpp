@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include "CustomDrawObjects.h"
+#include "RenderObject.h"
 #include "compute_segmesh_mobb.h"
 #include "XmlWriter.h"
 //#include "draw_boxes.h"
@@ -25,6 +26,7 @@ void Filter_mobb::initParameters(RichParameterSet *pars)
 {
     pars->addParam(new RichBool("display_mobb", true, "visualize mini obb"));
     pars->addParam(new RichBool("display_mesh", false, "visualize object mesh"));
+    pars->addParam(new RichBool("display_skel", true, "visualize box skeleton"));
     pars->addParam(new RichInt("segment_index", 0, "visualize segment individually"));
     is_computed = false;
     testing = false;
@@ -96,6 +98,7 @@ std::vector<Geom::Box> Filter_mobb::parse_xml(QString fname)
     possibility.clear();
     for(pugi::xml_node box : doc.children("box"))
     {
+        //first box is overall bounding box
         if (i < 0)
             i++;
         else
@@ -168,6 +171,30 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
     color.setAlphaF(0.3);
 #ifdef GUI_DRAWING
     drawArea()->clear();
+    if (pars && pars->getBool("display_skel"))
+    {
+        QVector3 q0, q1;
+        LineSegments *ls = new LineSegments(3.0);
+        int i = -1;
+        for(auto box : box_vec)
+        {
+            if(i < 0)
+            {
+                ++i;
+                continue;
+            }
+            color = qtJetColorMap(possibility.at(i));
+            int aid;
+            box.Extent.maxCoeff(&aid);
+            auto s = box.getSkeleton(aid);
+            q0 = QVector3(s.P0(0), s.P0(1), s.P0(2));
+            q1 = QVector3(s.P1(0), s.P1(1), s.P1(2));
+            ls->addLine(q0, q1, color);
+            ++i;
+        }
+        drawArea()->addRenderObject(ls);
+    }
+
     if(pars && pars->getBool("display_mobb"))
     {
         /*  //draw each index 
@@ -232,10 +259,6 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             ++i;
         }
         drawArea()->drawAllRenderObjects();
-    }
-    else
-    {
-        drawArea()->clear();
     }
 
     if(pars && pars->getBool("display_mesh"))
