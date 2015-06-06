@@ -19,7 +19,8 @@
 #include "RenderObject.h"
 #include "compute_segmesh_mobb.h"
 #include "XmlWriter.h"
-//#include "draw_boxes.h"
+#include "draw_boxes.h"
+//#include "box_assist.h"
 #define GUI_DRAWING 1
 
 void Filter_mobb::initParameters(RichParameterSet *pars)
@@ -175,6 +176,8 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
     {
         QVector3 q0, q1;
         LineSegments *ls = new LineSegments(3.0);
+        QVector< QVector<Vector3> > box_skel_ponits;
+        box_skel_ponits.clear();
         int i = -1;
         for(auto box : box_vec)
         {
@@ -187,9 +190,22 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             int aid;
             box.Extent.maxCoeff(&aid);
             auto s = box.getSkeleton(aid);
+            auto pnts = s.getUniformSamples(20);
+            box_skel_ponits.push_back(pnts);
+            for(int n=0; n<pnts.size(); ++n)
+                for(int m=n+1; m<pnts.size(); ++m)
+                {
+                    Vector3 temp_p0 = pnts.at(n);
+                    Vector3 temp_p1 = pnts.at(m);
+                    q0 = QVector3(temp_p0(0), temp_p0(1), temp_p0(2));
+                    q1 = QVector3(temp_p1(0), temp_p1(1), temp_p1(2));
+                    ls->addLine(q0, q1, color);
+                }
+            /*  
             q0 = QVector3(s.P0(0), s.P0(1), s.P0(2));
             q1 = QVector3(s.P1(0), s.P1(1), s.P1(2));
             ls->addLine(q0, q1, color);
+            */
             ++i;
         }
         drawArea()->addRenderObject(ls);
