@@ -19,8 +19,6 @@
 #include "RenderObject.h"
 #include "compute_segmesh_mobb.h"
 #include "XmlWriter.h"
-#include "draw_boxes.h"
-//#include "box_assist.h"
 #define GUI_DRAWING 1
 
 void Filter_mobb::initParameters(RichParameterSet *pars)

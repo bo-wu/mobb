@@ -15,7 +15,6 @@
 #define COMPUTE_SEGMESH_MOBB_H_
 #include <vector>
 #include "Eigen/Dense"
-//#include <igl/boolean/mesh_boolean.h>
 #include <nanoflann.hpp>
 #include "MinOBB.h"
 #include "SegMeshLoader.h"
