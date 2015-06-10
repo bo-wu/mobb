@@ -310,4 +310,5 @@ QColor Filter_mobb::qtJetColorMap(double value, double min, double max)
 }
 
 
+
 Q_EXPORT_PLUGIN(Filter_mobb)

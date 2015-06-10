@@ -20,6 +20,8 @@
 #include "SegMeshLoader.h"
 #include "SurfaceMeshPlugins.h"
 #include "CustomDrawObjects.h"
+#include "skeleton.h"
+#include "box_assist.h"
 
 class Filter_mobb : public SurfaceMeshFilterPlugin
 {
