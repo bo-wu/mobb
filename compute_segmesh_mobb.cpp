@@ -190,8 +190,8 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             auto s = box.getSkeleton(aid);
             auto pnts = s.getUniformSamples(20);
             box_skel_ponits.push_back(pnts);
-            for(int n=0; n<pnts.size(); ++n)
-                for(int m=n+1; m<pnts.size(); ++m)
+            for(int n=0; n < pnts.size(); ++n)
+                for(int m=n+1; m < pnts.size(); ++m)
                 {
                     Vector3 temp_p0 = pnts.at(n);
                     Vector3 temp_p1 = pnts.at(m);
@@ -265,7 +265,7 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
             color = qtJetColorMap(possibility.at(i));
             color.setAlphaF(0.8);
             PolygonSoup *ps = new PolygonSoup; 
-            for(QVector<Vector3> f : mobb.getFacePoints())
+            for(QVector <Vector3> f : mobb.getFacePoints())
             {
                 ps->addPoly(f, color);
             }
@@ -295,20 +295,51 @@ QColor Filter_mobb::qtJetColorMap(double value, double min, double max)
     value-=min;
     if(value==HUGE_VAL)
     {rgb[0]=rgb[1]=rgb[2]=255;}
-    else if(value<0)
+    else if(value < 0)
     {rgb[0]=rgb[1]=rgb[2]=0;}
-    else if(value<max4)
+    else if(value < max4)
     {rgb[0]=0;rgb[1]=0;rgb[2]=c1+(unsigned char)((255-c1)*value/max4);}
-    else if(value<2*max4)
+    else if(value < 2*max4)
     {rgb[0]=0;rgb[1]=(unsigned char)(255*(value-max4)/max4);rgb[2]=255;}
-    else if(value<3*max4)
+    else if(value < 3*max4)
     {rgb[0]=(unsigned char)(255*(value-2*max4)/max4);rgb[1]=255;rgb[2]=255-rgb[0];}
-    else if(value<max)
+    else if(value < max)
     {rgb[0]=255;rgb[1]=(unsigned char)(255-255*(value-3*max4)/max4);rgb[2]=0;}
     else {rgb[0]=255;rgb[1]=rgb[2]=0;}
     return QColor(rgb[0],rgb[1],rgb[2]);
 }
 
+
+std::vector<std::vector<Eigen::Vector2i> > Filter_mobb::skeleton_to_box()
+{
+    auto *model = document()->selectedModel();
+    auto skel_name = (model->path).section(".", 0, 0);
+    skel_name.append("_merge_ckel.cg");
+    skel.read_skel(qPrintable(skel_name));
+    std::list<Eigen::Vector2i> edge_list(skel.edges.begin(), skel.edges.end());
+    std::vector<std::vector<Eigen::Vector2i> > box_edge;
+    box_edge.clear();
+    for(auto box : box_vec)
+    {
+        std::vector<Vector2i> edge;
+        edge.clear();
+        std::list<Eigen::Vector2i>::iterator it = edge_list.begin();
+        while(it != edge_list.end())
+        {
+            if( point_inside_box(skel.vertices.at((*it)(0)), box) && point_inside_box(skel.vertices.at((*it)(1)), box) )
+            {
+                edge.push_back(*it);
+                it = edge_list.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        box_edge.push_back(edge);
+    }
+    return box_edge;
+}
 
 
 Q_EXPORT_PLUGIN(Filter_mobb)
