@@ -319,8 +319,14 @@ std::vector<std::vector<Eigen::Vector2i> > Filter_mobb::skeleton_to_box()
     std::list<Eigen::Vector2i> edge_list(skel.edges.begin(), skel.edges.end());
     std::vector<std::vector<Eigen::Vector2i> > box_edge;
     box_edge.clear();
+    int i = -1;
     for(auto box : box_vec)
     {
+        if (i == -1)
+        {
+            ++i;
+            continue;
+        }
         std::vector<Vector2i> edge;
         edge.clear();
         std::list<Eigen::Vector2i>::iterator it = edge_list.begin();
