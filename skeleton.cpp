@@ -70,3 +70,8 @@ void Skeleton::read_skel(const std::string fname)
         cerr<<"edge number error\n";
 }
 
+void Skeleton::clear_skel()
+{
+    vertices.clear();
+    edges.clear();
+}

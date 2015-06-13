@@ -58,6 +58,7 @@ private:
     QVector<Geom::MinOBB> segment_mobb_vec;
     std::vector<Geom::Box> box_vec;
     std::vector<double> possibility;
+    std::vector<std::vector<Eigen::Vector2i> > box_edge_vec;
 
 };
 

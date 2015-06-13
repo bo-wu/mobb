@@ -23,6 +23,7 @@ public:
     Skeleton(){}
     std::vector<Eigen::Vector3d> vertices;
     std::vector<Eigen::Vector2i> edges;
+    void clear_skel();
     void read_skel(const std::string);
 };
 

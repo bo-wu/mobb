@@ -159,6 +159,7 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
         auto xml_name = (model->path).section(".", 0, 0);
         xml_name.append(".xml");
         box_vec = parse_xml(xml_name);
+        skeleton_to_box();
         is_computed = true;
     }
     
@@ -185,6 +186,15 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
                 continue;
             }
             color = qtJetColorMap(possibility.at(i));
+            for(auto line_segs :  box_edge_vec.at(i))
+            {
+                Vector3 temp_p0 = skel.vertices.at(line_segs(0));
+                Vector3 temp_p1 = skel.vertices.at(line_segs(1));
+                q0 = QVector3(temp_p0(0), temp_p0(1), temp_p0(2));
+                q1 = QVector3(temp_p1(0), temp_p1(1), temp_p1(2));
+                ls->addLine(q0, q1, color);
+            }
+            /*
             int aid;
             box.Extent.maxCoeff(&aid);
             auto s = box.getSkeleton(aid);
@@ -199,6 +209,7 @@ void Filter_mobb::applyFilter(RichParameterSet *pars)
                     q1 = QVector3(temp_p1(0), temp_p1(1), temp_p1(2));
                     ls->addLine(q0, q1, color);
                 }
+                */
             /*  
             q0 = QVector3(s.P0(0), s.P0(1), s.P0(2));
             q1 = QVector3(s.P1(0), s.P1(1), s.P1(2));
@@ -315,6 +326,7 @@ std::vector<std::vector<Eigen::Vector2i> > Filter_mobb::skeleton_to_box()
     auto *model = document()->selectedModel();
     auto skel_name = (model->path).section(".", 0, 0);
     skel_name.append("_merge_ckel.cg");
+    skel.clear_skel();
     skel.read_skel(qPrintable(skel_name));
     std::list<Eigen::Vector2i> edge_list(skel.edges.begin(), skel.edges.end());
     std::vector<std::vector<Eigen::Vector2i> > box_edge;
@@ -344,6 +356,8 @@ std::vector<std::vector<Eigen::Vector2i> > Filter_mobb::skeleton_to_box()
         }
         box_edge.push_back(edge);
     }
+    box_edge_vec.clear();
+    box_edge_vec = box_edge;
     return box_edge;
 }
 

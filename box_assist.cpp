@@ -11,6 +11,7 @@
  *
  * =====================================================================================
  */
+#include <cmath>
 #include "box_assist.h"
 
 bool point_inside_box(const Eigen::Vector3d &point, const Geom::Box &box)
@@ -19,7 +20,7 @@ bool point_inside_box(const Eigen::Vector3d &point, const Geom::Box &box)
     bool result = true;
     for(int i=0; i < 3; ++i)
     {
-        float dist = p2b.dot(box.Axis[i]);
+        float dist = fabs( p2b.dot(box.Axis[i]) );
         if(dist > box.Extent(i))
         {
             result = false;
